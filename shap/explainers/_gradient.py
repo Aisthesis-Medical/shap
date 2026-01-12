@@ -554,9 +554,16 @@ class _PyTorchGradient(Explainer):
             ]
             del self.layer.target_input  # type: ignore[union-attr]
         else:
+            grads = []
+            for idx, x in enumerate(X):
+                if (y :=
+                torch.autograd.grad(selected, x, retain_graph=True if idx + 1 < len(X) else None, allow_unused=True)[
+                    0]) is None:
+                    grads.append(torch.zeros(x.size()))
+                else:
+                    grads.append(y)
             grads = [
-                torch.autograd.grad(selected, x, retain_graph=True if idx + 1 < len(X) else None)[0].cpu().numpy()
-                for idx, x in enumerate(X)
+                g.cpu().numpy() for g in grads
             ]
         return grads
 
@@ -653,11 +660,20 @@ class _PyTorchGradient(Explainer):
                             )
                         else:
                             x = X[a][j].clone().detach()
-                        samples_input[a][k] = (
-                            (t * x + (1 - t) * (self.model_inputs[a][rind]).clone().detach()).clone().detach()
-                        )
-                        if self.input_handle is None:
-                            samples_delta[a][k] = (x - (self.data[a][rind]).clone().detach()).cpu().numpy()
+
+                        if x.dtype == torch.bool:
+                            # For padding mask we consider the AND between the current and random sample
+                            samples_input[a][k] = (
+                                (x & self.model_inputs[a][rind].clone().detach()).clone().detach()
+                            )
+                            if self.input_handle is None:
+                                samples_delta[a][k] = torch.zeros(x.size()).detach().cpu().numpy()
+                        else:
+                            samples_input[a][k] = (
+                                (t * x + (1 - t) * (self.model_inputs[a][rind]).clone().detach()).clone().detach()
+                            )
+                            if self.input_handle is None:
+                                samples_delta[a][k] = (x - (self.data[a][rind]).clone().detach()).cpu().numpy()
 
                     if self.interim is True:
                         with torch.no_grad():

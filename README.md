@@ -1,4 +1,13 @@
+# AIMED fork of shap repo
 
+This a fork of the original shap repository, that contains some code changes to explain our models.
+
+* Changed `shap/explainers/_gradient.py` to ignore the padding mask input.
+* Added our internal pypi index to the pyproject.toml, to allow publishing the module internally.
+
+The module is currently used by the `training (viosync-spi)` and `inference (viosync-ai)` repos.
+
+## Original README
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/shap/shap/master/docs/artwork/shap_header.svg" width="800" />

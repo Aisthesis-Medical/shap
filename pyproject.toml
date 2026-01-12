@@ -325,3 +325,9 @@ archs = ["AMD64"]
 
 [tool.cibuildwheel.macos]
 archs = ["x86_64", "arm64"]
+
+[[tool.uv.index]]
+name = "internal-pypi"
+url = "https://mlflowuser@20.54.82.247"
+publish-url = "https://mlflowuser@20.54.82.247"
+explicit = true
